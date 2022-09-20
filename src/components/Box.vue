@@ -22,14 +22,19 @@
     <div class="bitcoins__box__container">
       <div v-if="priceCoin" class="bitcoin__box__coin">
         <img class="bitcoin__box__image" src="../assets/bitcoin.png" alt="" />
-        <p class="bitcoin__box__coin--title">{{ `R$: ${priceCoin},00` }}</p>
+        <p class="bitcoin__box__coin--title">{{ priceCoin }}</p>
       </div>
       <span class="box__state__empty" v-else>Empty</span>
     </div>
   </div>
-  <!-- <div>
-    <form class="bitcoins__form" @submit.prevent="submit"></form>
-  </div> -->
+  <div>
+    <select name="" id="" @change="(e) => select(e.target.value)">
+      <option value="brl">Real Brasileiro</option>
+      <option value="usd">Dolar Amaricano</option>
+      <option value="eth">Etherio</option>
+    </select>
+  </div>
+  <!-- <Modal :ismodal="loading" /> -->
 </template>
 
 <script lang="ts">
@@ -54,9 +59,17 @@ export default defineComponent({
   methods: {
     async getFullCoins() {
       this.loading = true
+
       try {
         const data = await api.get(this.path)
-        this.priceCoin = data.data.bitcoin.brl
+        const AnyPriceCoin = data.data.bitcoin
+
+        if (this.currencies === 'brl')
+          this.priceCoin = `R$: ${AnyPriceCoin.brl},00`
+        if (this.currencies === 'usd')
+          this.priceCoin = `$: ${AnyPriceCoin.usd},00`
+        if (this.currencies === 'eth')
+          this.priceCoin = `eth: ${AnyPriceCoin.eth},00`
       } catch (err) {
         console.log({ err })
       } finally {
@@ -82,6 +95,13 @@ export default defineComponent({
       } else {
         this.path = `/simple/price?ids=bitcoin&vs_currencies=${this.currencies}&date=${date}`
       }
+      this.getFullCoins()
+    },
+    select(value: string) {
+      this.currencies = value
+      this.seach = ''
+      ;(this.path = `/simple/price?ids=bitcoin&vs_currencies=${value}`),
+        console.log(value)
       this.getFullCoins()
     },
   },
