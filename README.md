@@ -9,9 +9,9 @@ yarn install
 ### Compilar e iniciar o servidor
 
 ```
-yarn start
+yarn serve
 
-or npm start
+or npm serve
 ```
 
 ### Tecnologia utilizadas
