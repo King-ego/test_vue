@@ -50,5 +50,5 @@ Na parte inferior esquerdo existe um select responsário por filtrar por algumas
 ### Durante o request da Api
 
 ```
-Enquanto a api é consultada, uma modal é aberta simbolizando o loading da aplicação, em caso de de sucesso ou falha, ela será encerrada.
+Enquanto a api é consultada, uma modal é aberta simbolizando o loading da aplicação, em caso de de sucesso ou falha, o loading será encerrado.
 ```
