@@ -4,7 +4,6 @@
       <Container>
         <div class="bitcoin__header__container">
           <p>Bitcoin Express</p>
-          <!-- <img width="100" src="../assets/logo_aplication.png" alt="" /> -->
         </div>
       </Container>
     </div>

@@ -22,11 +22,11 @@
     <div class="bitcoins__box__container">
       <div v-if="priceCoin" class="bitcoin__box__coin">
         <img
-          class="bitcoin__box__image"
+          class="bitcoin__box__image rotation180x"
           src="../assets/bitcoin.png"
           alt="Image Coin"
         />
-        <p class="bitcoin__box__coin--title">
+        <p class="bitcoin__box__coin__title isExistAnimation">
           {{ priceCoin }}
         </p>
       </div>
@@ -34,11 +34,15 @@
     </div>
   </div>
   <div>
-    <select name="" id="" @change="(e) => select(e.target.value)">
-      <option value="brl">Real Brasileiro</option>
-      <option value="usd">Dolar Amaricano</option>
-      <option value="eth">Etherio</option>
-      <option value="ltc">Litecoin</option>
+    <select class="bitcoin__select" @change="(e) => select(e.target.value)">
+      <option class="bitcoin__select__option" value="brl">
+        Real Brasileiro
+      </option>
+      <option class="bitcoin__select__option" value="usd">
+        Dolar Amaricano
+      </option>
+      <option class="bitcoin__select__option" value="eth">Ethereum</option>
+      <option class="bitcoin__select__option" value="ltc">Litecoin</option>
     </select>
   </div>
   <Modal :ismodal="loading" />
@@ -90,10 +94,10 @@ export default defineComponent({
         console.log({ err })
       } finally {
         this.loading = false
-        // clearTimeout(this.setTime)
-        // this.setTime = setTimeout(() => {
-        //   this.getFullCoins(true)
-        // }, 2000)
+        clearTimeout(this.setTime)
+        this.setTime = setTimeout(() => {
+          this.getFullCoins(true)
+        }, 2000)
       }
     },
     formatString(value: string, coin?: string): string {
@@ -137,8 +141,11 @@ export default defineComponent({
       const regex = new RegExp(
         '^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$'
       )
+
       const dateAfter = dataAtual.isAfter(date, 'day')
+
       const isDate = date.match(regex)
+
       return [isDate?.length, dateAfter]
     },
 
@@ -189,7 +196,7 @@ export default defineComponent({
   height: 116px;
 }
 
-.bitcoin__box__coin--title {
+.bitcoin__box__coin__title {
   color: #000;
   font-family: 'Montserrat Bold';
   font-weight: 700;
@@ -197,19 +204,19 @@ export default defineComponent({
 }
 
 @media (min-width: 380px) {
-  .bitcoin__box__coin--title {
+  .bitcoin__box__coin__title {
     font-size: 30px;
   }
 }
 
 @media (min-width: 530px) {
-  .bitcoin__box__coin--title {
+  .bitcoin__box__coin__title {
     font-size: 40px;
   }
 }
 
 @media (min-width: 640px) {
-  .bitcoin__box__coin--title {
+  .bitcoin__box__coin__title {
     font-size: 56px;
   }
 }
@@ -243,6 +250,30 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   padding: 5px;
+  cursor: pointer;
   border-radius: 0 10px 10px 0;
+}
+
+.form__buttom__search:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.bitcoin__select__option,
+.bitcoin__select {
+  font-family: 'Roboto Bold';
+  font-weight: 700;
+  font-size: 18px;
+  color: gold;
+  background: #1f1f1f;
+}
+
+.bitcoin__select {
+  width: 100%;
+  max-width: 200px;
+  height: 50px;
+  margin-top: 20px;
+  border: 2px solid #fff;
+  padding: 10px;
+  border-radius: 10px;
 }
 </style>
