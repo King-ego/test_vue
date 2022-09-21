@@ -2,18 +2,18 @@
   <div>
     <div>
       <form class="bitcoins__form" @submit.prevent="submit">
-        <div class="bitcoins__form__box">
+        <div class="bitcoins__form__box" title="Busque por data">
           <input
-            id="seach"
-            class="form__input__seach"
+            id="search"
+            class="form__input__search"
             type="date"
-            v-model="seach"
+            v-model="search"
           />
-          <button type="submit" class="form__buttom__seach">
+          <button type="submit" class="form__buttom__search">
             <img
-              class="form__image__seach"
-              src="../assets/seach_orange.png"
-              alt=""
+              class="form__image__search"
+              src="../assets/search_orange.png"
+              alt="search"
             />
           </button>
         </div>
@@ -21,8 +21,14 @@
     </div>
     <div class="bitcoins__box__container">
       <div v-if="priceCoin" class="bitcoin__box__coin">
-        <img class="bitcoin__box__image" src="../assets/bitcoin.png" alt="" />
-        <p class="bitcoin__box__coin--title">{{ priceCoin }}</p>
+        <img
+          class="bitcoin__box__image"
+          src="../assets/bitcoin.png"
+          alt="Image Coin"
+        />
+        <p class="bitcoin__box__coin--title">
+          {{ priceCoin }}
+        </p>
       </div>
       <span class="box__state__empty" v-else>Empty</span>
     </div>
@@ -32,9 +38,10 @@
       <option value="brl">Real Brasileiro</option>
       <option value="usd">Dolar Amaricano</option>
       <option value="eth">Etherio</option>
+      <option value="ltc">Litecoin</option>
     </select>
   </div>
-  <!-- <Modal :ismodal="loading" /> -->
+  <Modal :ismodal="loading" />
 </template>
 
 <script lang="ts">
@@ -43,65 +50,114 @@ import moment from 'moment'
 
 import api from '@/services/api'
 
+import Modal from '@/components/Modal.vue'
+
 export default defineComponent({
   name: 'Box',
   data() {
     return {
       loading: false,
-      path: '/simple/price?ids=bitcoin&vs_currencies=brl',
-      seach: '',
+      path: '/coins/bitcoin/history',
+      search: '',
       priceCoin: '',
       setTime: 0,
       currencies: 'brl',
     }
   },
-  components: {},
+  components: { Modal },
   methods: {
-    async getFullCoins() {
-      this.loading = true
+    async getFullCoins(loading?: boolean): Promise<void> {
+      this.loading = !loading
 
       try {
-        const data = await api.get(this.path)
-        const AnyPriceCoin = data.data.bitcoin
+        const url = this.getUrl()
 
-        if (this.currencies === 'brl')
-          this.priceCoin = `R$: ${AnyPriceCoin.brl},00`
-        if (this.currencies === 'usd')
-          this.priceCoin = `$: ${AnyPriceCoin.usd},00`
-        if (this.currencies === 'eth')
-          this.priceCoin = `eth: ${AnyPriceCoin.eth},00`
+        const data = await api.get(url)
+        const AnyPriceCoin = data.data.market_data.current_price
+
+        const coin = {
+          brl: `${AnyPriceCoin.brl}`,
+          usd: `${AnyPriceCoin.usd}`,
+          eth: `${AnyPriceCoin.eth} ETH`,
+          ltc: `${AnyPriceCoin.ltc} ETH`,
+        }
+
+        this.priceCoin = this.formatString(
+          coin[this.currencies as 'brl'],
+          this.currencies
+        )
       } catch (err) {
         console.log({ err })
       } finally {
         this.loading = false
         // clearTimeout(this.setTime)
         // this.setTime = setTimeout(() => {
-        //   this.getFullCoins()
+        //   this.getFullCoins(true)
         // }, 2000)
       }
     },
-    submit() {
-      const date = moment(String(this.seach)).format('DD/MM/YYYY')
+    formatString(value: string, coin?: string): string {
+      let [whole, broke] = value.split('.')
 
+      if (!broke) {
+        broke = '00'
+      } else {
+        broke = broke.slice(0, 2)
+      }
+
+      const localMoney = parseFloat(`${whole}.${broke}`).toLocaleString('pt-BR')
+
+      const isCoin = coin ? coin : ''
+
+      const coinVirtual = ['eth', 'ltc'].includes(isCoin)
+        ? coin?.toUpperCase()
+        : ''
+
+      const moneySign = isCoin === 'brl' ? 'R$' : isCoin === 'usd' ? '$' : ''
+
+      return `BTC = ${moneySign} ${localMoney} ${coinVirtual}`
+    },
+
+    getUrl(): string {
+      const now = moment()
+      const dateNow = moment(now).format('DD-MM-YYYY')
+      const searchNow = moment(this.search).format('DD-MM-YYYY')
+
+      const url = this.search
+        ? `${this.path}?date=${searchNow}`
+        : `${this.path}?date=${dateNow}`
+
+      return url
+    },
+
+    validatedInput(
+      date: string,
+      dataAtual: moment.Moment
+    ): [number | undefined, boolean] {
       const regex = new RegExp(
         '^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$'
       )
-      const validatedDate = date.match(regex)
+      const dateAfter = dataAtual.isAfter(date, 'day')
+      const isDate = date.match(regex)
+      return [isDate?.length, dateAfter]
+    },
 
-      if (!validatedDate?.length) return
+    submit(): void {
+      const date = moment(String(this.search)).format('DD-MM-YYYY')
+      const dataAtual = moment()
 
-      if (!this.seach) {
-        this.path = `/simple/price?ids=bitcoin&vs_currencies=${this.currencies}`
-      } else {
-        this.path = `/simple/price?ids=bitcoin&vs_currencies=${this.currencies}&date=${date}`
+      const [validatedDate, dateAfter] = this.validatedInput(date, dataAtual)
+
+      if (!validatedDate || !dateAfter) {
+        alert('formato de data invalido')
+        return
       }
       this.getFullCoins()
     },
-    select(value: string) {
+    select(value: string): void {
       this.currencies = value
-      this.seach = ''
-      ;(this.path = `/simple/price?ids=bitcoin&vs_currencies=${value}`),
-        console.log(value)
+      this.search = ''
+      this.path = `/coins/bitcoin/history`
       this.getFullCoins()
     },
   },
@@ -135,7 +191,27 @@ export default defineComponent({
 
 .bitcoin__box__coin--title {
   color: #000;
+  font-family: 'Montserrat Bold';
   font-weight: 700;
+  font-size: 25px;
+}
+
+@media (min-width: 380px) {
+  .bitcoin__box__coin--title {
+    font-size: 30px;
+  }
+}
+
+@media (min-width: 530px) {
+  .bitcoin__box__coin--title {
+    font-size: 40px;
+  }
+}
+
+@media (min-width: 640px) {
+  .bitcoin__box__coin--title {
+    font-size: 56px;
+  }
 }
 
 .bitcoins__form {
@@ -148,21 +224,21 @@ export default defineComponent({
   display: flex;
   border-radius: 10px;
 }
-.form__image__seach {
+.form__image__search {
   width: 20px;
   height: 20px;
 }
-.form__input__seach {
+.form__input__search {
   border-radius: 10px 0 0 10px;
   outline: none;
   width: 152px;
   padding: 0 15px;
   font-size: 16px;
   font-weight: 700;
+  font-family: 'Roboto';
 }
-.form__buttom__seach {
+.form__buttom__search {
   background: #000;
-  /* border: 1px solid #fff; */
   display: flex;
   align-items: center;
   justify-content: center;
