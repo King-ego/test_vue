@@ -6,7 +6,7 @@
 yarn install
 ```
 
-### Compiles and hot-reloads for development
+### Compilar e iniciar o servidor
 
 ```
 yarn serve
@@ -22,7 +22,7 @@ moment
 ### Tempo de update de dados
 
 ```
-A aplicação atualiza a cada 2s sem a necessecidade re realizar reload no pagina
+A aplicação atualiza a cada 2s sem a necessecidade realizar reload no página
 ```
 
 ## Filtros
@@ -44,7 +44,7 @@ Caso o input tenha um valor inválido ou seja fornecida uma data maior que a atu
 ### Por Moeda
 
 ```
-Na parte inferior esquerdo existe um select responsário por filtrar por algumas moedas como o real e o ethereum
+Na parte inferior esquerdo existe um select responsável por filtrar por algumas moedas como o real e o ethereum
 ```
 
 ### Durante o request da Api
